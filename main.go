@@ -2,37 +2,48 @@ package main
 
 import (
 	"fmt"
+	_ "image/png"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"golang.org/x/image/colornames"
-	_ "image/png"
 )
 
 type firstGame struct {
 	player *ebiten.Image
 	xloc   int
 	yloc   int
+	speed  int
 	score  int
 }
 
-func (f firstGame) Update() error {
+func (f *firstGame) Update() error {
+	f.xloc += f.speed
+	if f.xloc > (1000-f.player.Bounds().Dx()) || f.xloc < 0 {
+		f.speed = -f.speed
+	}
 	return nil
 }
 
-func (f firstGame) Draw(screen *ebiten.Image) {
+func (f *firstGame) Draw(screen *ebiten.Image) {
 	screen.Fill(colornames.Mediumseagreen)
+	drawOps := &ebiten.DrawImageOptions{}
+	drawOps.GeoM.Reset()
+	drawOps.GeoM.Translate(float64(f.xloc), float64(f.yloc))
+	screen.DrawImage(f.player, drawOps)
 }
 
-func (f firstGame) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+func (f *firstGame) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return outsideWidth, outsideHeight
 }
 
 func main() {
 	ebiten.SetWindowSize(1000, 1000)
 	ebiten.SetWindowTitle("First Class Example")
-	playerPict, _, err := ebitenutil.NewImageFromFile("player.png")
+	playerPict, _, err := ebitenutil.NewImageFromFile("ship.png")
 	ourGame := firstGame{
 		player: playerPict,
+		speed:  3,
 		xloc:   400,
 		yloc:   200,
 	} //we will use the zero value for now
